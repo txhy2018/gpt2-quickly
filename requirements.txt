@@ -6,4 +6,4 @@ keras==2.9.0
 tqdm
 click
 jieba
-sentencepiece==0.1.91
+sentencepiece
