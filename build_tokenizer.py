@@ -15,8 +15,18 @@ def main():
 
 
 def train_with_sentenceprices(vocab_size: int = 3000, num_threads=2, character_coverage=0.98):
-    os.system(f"spm_train --input={configs.data.raw_cut} --model_prefix=spiece --model_type=bpe --character_coverage={character_coverage} --vocab_size={vocab_size} --num_threads={num_threads}")
-    os.system(f"mv spiece.model {configs.data.path}")
+    import sentencepiece as spm
+    spm.SentencePieceTrainer.train(input=configs.data.raw_cut, 
+                                   model_prefix='spiece', 
+                                   vocab_size=vocab_size, 
+                                   model_type="bpe",
+                                   num_threads=num_threads,
+                                   character_coverage=character_coverage,
+                                   #user_defined_symbols=['foo', 'bar']
+                                  )
+    # os.system(f"spm_train --input={configs.data.raw_cut} --model_prefix=spiece --model_type=bpe --character_coverage={character_coverage} --vocab_size={vocab_size} --num_threads={num_threads}")
+    if os.path.exists("./spiece.model"):
+        os.system(f"mv spiece.model {configs.data.path}")
 
 
 if __name__ == '__main__':
