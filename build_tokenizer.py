@@ -17,7 +17,7 @@ def main():
 def train_with_sentenceprices(vocab_size: int = 3000, num_threads=2, character_coverage=0.98):
     import sentencepiece as spm
     spm.SentencePieceTrainer.train(input=configs.data.raw_cut, 
-                                   model_prefix='spiece', 
+                                   model_prefix='spiece',  # 自定义文件名称，运行后将在当前路径自动保存两个文件：如spiece.model spiece.vocab
                                    vocab_size=vocab_size, 
                                    model_type="bpe",
                                    num_threads=num_threads,
