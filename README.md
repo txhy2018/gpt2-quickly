@@ -55,7 +55,10 @@ this is a example of raw dataset: [raw.txt](dataset/test/raw.txt)
 ## 0x01. Build vocab
 
 ```bash
+# 将中文文本用jieba分割，以空格隔开
 python cut_words.py
+
+# 
 python build_tokenizer.py
 ```
 
