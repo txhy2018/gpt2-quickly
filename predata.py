@@ -21,7 +21,8 @@ def encode_processer(processer_num: int):
     output_file_l = open(os.path.join(configs.data.pickle_path, f'data.{processer_num}.l.pickle'), 'wb')
     output_file_m = open(os.path.join(configs.data.pickle_path, f'data.{processer_num}.m.pickle'), 'wb')
     output_file_s = open(os.path.join(configs.data.pickle_path, f'data.{processer_num}.s.pickle'), 'wb')
-    for content in tqdm(contents, desc=f"processer_{processer_num}"):
+    for content in tqdm(contents, desc=f"processer_{processer_num}"):  # 1、对每一行(个)样本进行遍历处理
+        # 2、不同长度字符串，设置不同的 pre_size 大小
         if len(content) < 24:
             continue
         if len(content) <= 64 - 2:
@@ -33,10 +34,11 @@ def encode_processer(processer_num: int):
         else:
             pre_size = configs.model.max_length 
             output_file = output_file_l
+        # 3、构建分词器
         content = tokenizer.sep_token + content + tokenizer.cls_token
         content_decoded = tokenizer(content, return_attention_mask=False,
                                     return_token_type_ids=False, add_special_tokens=False)['input_ids']
-
+        # 4、对大于预设大小的解码样本进行分块切割形成多个组合
         if len(content_decoded) > pre_size:
             end_left_size = 64
             block_size = (pre_size - end_left_size)
@@ -54,6 +56,7 @@ def encode_processer(processer_num: int):
             new_content[-1] = new_content[-2][-(pre_size - len(new_content[-1])):] + new_content[-1]
         else:
             new_content[-1] = new_content[-1] + [tokenizer.pad_token_id] * (pre_size - len(new_content[-1]))
+        # 5、保存
         if len(new_content) > 0:
             input_ids = np.array(new_content, dtype=np.int32)
             output_file.write(pickle.dumps(input_ids)+'换行'.encode())
@@ -88,7 +91,7 @@ def split_data(
     print(num_pre_task, len(texts), n_processes)
     for _i, i in tqdm(enumerate(range(0, len(texts), num_pre_task)), desc="spliting data..."):
         current_text = texts[i: i + num_pre_task]
-        with open(os.path.join(configs.data.pickle_path, f'data.{_i}.jsonp'), 'wb') as output_file:
+        with open(os.path.join(configs.data.pickle_path, f'data.{_i}.jsonp'), 'wb') as output_file:  # jsonp是一种script跨域数据访问计术，但有安全漏洞
             pickle.dump(current_text, output_file)
         print("pre task num: ", len(current_text))
         del current_text
@@ -104,12 +107,12 @@ def preprocess(n_processes):
     data = []
     print('reading raw data ...')
     with open(configs.data.raw, 'r') as f:
-        for line in tqdm(list(f.readlines())):
+        for line in tqdm(list(f.readlines())):  # 1、读取原始文本每一行文本字符串
             if len(line) > 0:
                 data.append(line)
             del line
-    random.shuffle(data)
-    data = "\n\n|-|\n\n".join(data)
+    random.shuffle(data)  # 随机打乱数据
+    data = "\n\n|-|\n\n".join(data)  # ?，是一种自定义标识，用于分割两个样本字符串
     split_data(data, n_processes, block_size)
     del data
     gc.collect()
